@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar: pre-token protocols ranked by implied value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<a class="skip" href="#board">Skip to the board</a>
+<header class="top">
+  <div class="brand"><span class="mark" aria-hidden="true"></span><span class="brand-name">TOKEN RADAR &middot; radar-2</span></div>
+  <div class="top-meta"><span id="meta-date">Snapshot &mdash;</span><span>DefiLlama protocol index</span><span>Model radar-2</span></div>
+</header>
+<main id="board" tabindex="-1" aria-busy="true">
+  <section class="lede">
+    <div>
+      <h1>Every protocol that records no token, ranked by what its token would be worth.</h1>
+      <p>The watchlist is the floor: every protocol with at least $50M of TVL and no token on record. The early radar adds every other rankable pre-token protocol in the snapshot, below the floor and above it. Implied value is a model estimate, not a price and not a prediction that a token will be issued, or when.</p>
+    </div>
+    <div class="facts" id="facts"></div>
+  </section>
+
+  <section class="spotlight" aria-labelledby="spot-h">
+    <h2 id="spot-h">Top 10 spotlight</h2>
+    <ol id="spotlight" class="spot-list"></ol>
+  </section>
+
+  <div class="controls">
+    <div class="field"><label for="q">Search</label><input type="search" id="q" placeholder="Search name, slug, category or chain" aria-label="Search the board"></div>
+    <div class="field"><label for="category">Category</label><select id="category" aria-label="Filter by category"><option value="all">All categories</option></select></div>
+    <div class="field"><label for="chain">Chain</label><select id="chain" aria-label="Filter by chain"><option value="all">All chains</option></select></div>
+    <div class="field"><label for="min-tvl">Min TVL</label><select id="min-tvl" aria-label="Filter by minimum TVL"><option value="0">Any TVL</option><option value="50000000">$50M and up</option><option value="100000000">$100M and up</option><option value="1000000000">$1B and up</option></select></div>
+    <label class="check"><input type="checkbox" id="watch-only"> Watchlist only</label>
+    <div class="tabs" role="group" aria-label="Token status">
+      <button type="button" id="tab-pre" aria-pressed="true">Pre-token</button>
+      <button type="button" id="tab-live" aria-pressed="false">Live token</button>
+    </div>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="panel" id="board-panel">
+    <div class="table-wrap">
+      <table id="board-table">
+        <caption class="sub">Pre-token protocols, strongest implied value first. Select a row for its model breakdown and farm plan.</caption>
+        <thead><tr>
+          <th scope="col"><button type="button" data-sort="rank">Rank</button></th>
+          <th scope="col"><button type="button" data-sort="name">Protocol</button></th>
+          <th scope="col"><button type="button" data-sort="tvl">TVL</button></th>
+          <th scope="col"><button type="button" data-sort="growth">7d</button></th>
+          <th scope="col"><button type="button" data-sort="age">Age</button></th>
+          <th scope="col"><button type="button" data-sort="implied">Implied value</button></th>
+          <th scope="col">Token</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty" hidden>
+      <h2>No protocol matches that filter</h2>
+      <p>Clear the search or pick another category, chain or TVL to see the board again.</p>
+      <button class="button primary" type="button" id="clear">Clear filters</button>
+    </div>
+  </div>
+
+  <div class="panel" id="live-panel" hidden>
+    <div class="table-wrap">
+      <table>
+        <caption class="sub">Token live: these protocols already trade, so their market cap is a fact, not a model. They are set aside from the pre-token ranking.</caption>
+        <thead><tr><th scope="col">Status</th><th scope="col">Protocol</th><th scope="col">TVL</th><th scope="col">7d</th><th scope="col">Market cap</th><th scope="col">Token</th></tr></thead>
+        <tbody id="live-rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <section class="panel model" aria-labelledby="model-h">
+    <h2 id="model-h">How implied value is computed</h2>
+    <p class="sub">Every row is scored by one function of the snapshot figures. No protocol name is special-cased, and no row is hand-picked. The detail view recomputes each row from the same figures and checks it against the number board.json carries.</p>
+    <div class="formula">implied = round( tvl_usd &times; category_multiple &times; (1 + clamp(change_7d, &minus;40, +80) / 100 &times; 0.7) &times; (0.65 + 0.35 &times; min(age_days, 1095) / 1095) &times; (1 + 0.04 &times; min(chains &minus; 1, 3)) )</div>
+    <p class="sub">TVL and seven-day growth come from the snapshot. Age is the time since the protocol was first listed, the best record of how long it has run with no token; an unlisted age uses 365 days. Chain count rewards protocols live on more chains, capped at three extra chains.</p>
+    <table class="bands">
+      <caption class="sub">Category multiples</caption>
+      <thead><tr><th scope="col">Category band</th><th scope="col">Multiple</th></tr></thead>
+      <tbody>
+        <tr><td>Dexs / Perpetual / Derivatives</td><td class="num">0.45</td></tr>
+        <tr><td>Lending / CDP / Collateral</td><td class="num">0.35</td></tr>
+        <tr><td>Yield / Leveraged Farming / Liquidity Manager</td><td class="num">0.30</td></tr>
+        <tr><td>RWA / Stablecoin / Payments</td><td class="num">0.20</td></tr>
+        <tr><td>Risk Curators / Onchain Capital Allocator</td><td class="num">0.15</td></tr>
+        <tr><td>Chain / Bridge / other</td><td class="num">0.12</td></tr>
+        <tr><td>Anything else (default)</td><td class="num">0.25</td></tr>
+      </tbody>
+    </table>
+    <p class="sub">Farm plans: eight steps per protocol, derived from its category, chains, TVL and age. Capital is $250 at $5B TVL and up, $150 at $1B, $100 at $100M, otherwise $50. Hold is 60 days under 180 days old, 45 days under a year, otherwise 30 days. Gas is about $5&ndash;$15 on Ethereum, $0.10&ndash;$1 on L2s, about $0.01 on Solana, $1&ndash;$3 elsewhere.</p>
+  </section>
+
+  <p class="disclaimer">Disclaimer: this board says a protocol <strong>records no token</strong> in the snapshot, never that it has none &mdash; a protocol may hold a token its DefiLlama record does not carry. Implied value is the radar-2 model's own estimate from TVL, growth, age and chain count; it is not a price, not a valuation, and not a prediction that a token will be issued, or when. Farming costs real money and gas, and a token, if one ever comes, may be worth nothing.</p>
+</main>
+<dialog class="detail" id="detail" aria-labelledby="detail-title"></dialog>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
